@@ -5,20 +5,31 @@ using UnityEngine;
 public class CameraController : MonoBehaviour
 {
     public Transform target;
+    float distance = 15f;
+    float height = 2f;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    float rotationDamping = 3.0f;
 
-    // Update is called once per frame
-    void Update()
+
+    void LateUpdate()
     {
-        Vector3 targetPos = target.position - target.forward * 5f + Vector3.up * 1f;
-        float bias = 0.95f;
-        transform.position = transform.position * bias +
-            targetPos * (1f - bias);
-        transform.LookAt(target.position + target.forward * 40f);
+        float wantedRotationAngleSide = target.eulerAngles.y;
+        float currentRotationAngleSide = transform.eulerAngles.y;
+
+        float wantedRotationAngleUp = target.eulerAngles.x;
+        float currentRotationAngleUp = transform.eulerAngles.x;
+
+        currentRotationAngleSide = Mathf.LerpAngle(currentRotationAngleSide, wantedRotationAngleSide, rotationDamping * Time.deltaTime);
+
+        currentRotationAngleUp = Mathf.LerpAngle(currentRotationAngleUp, wantedRotationAngleUp, rotationDamping * Time.deltaTime);
+
+        Quaternion currentRotation = Quaternion.Euler(currentRotationAngleUp, currentRotationAngleSide, 0);
+
+        transform.position = target.position;
+        transform.position -= currentRotation * Vector3.forward * distance;
+
+        transform.LookAt(target);
+
+        transform.position += transform.up * height;
     }
 }
