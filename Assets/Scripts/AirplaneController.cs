@@ -19,15 +19,13 @@ public class AirplaneController : MonoBehaviour
     Rigidbody rb;
 
     private float acceleration;
-    private float wPitch;
-    private float sPitch;
+    private float roll;
 
     void Start()
     {
         rb = gameObject.GetComponent<Rigidbody>();
         acceleration = 0;
-        wPitch = 0;
-        sPitch = 0;
+        roll = 0;
     }
 
     private void Awake()
@@ -43,18 +41,18 @@ public class AirplaneController : MonoBehaviour
             Application.Quit();
         }
 
-        // MOVEMENT
+        // UPDATE POSITION
         speed += acceleration * Time.deltaTime;
         if (speed >= 0)
         {
             Vector3 targetPos = transform.position + transform.forward * Time.deltaTime * speed;
             transform.position = targetPos;
         }
+
         // Increaseing altitude decreases speed, SHOULD BE DELTA?
         speed -= transform.forward.y * Time.deltaTime * 15f;
 
-        // PITCH AND YAW
-        Debug.Log(pitchCurve.Evaluate(speed / maxSpeed) * 40f);
+        // PITCH
         if (Input.GetKey(KeyCode.UpArrow))
         {
             transform.RotateAround(transform.position, transform.right, Time.deltaTime * pitchCurve.Evaluate(speed/maxSpeed) * pitchRate);
@@ -63,16 +61,49 @@ public class AirplaneController : MonoBehaviour
         {
             transform.RotateAround(transform.position, -transform.right, Time.deltaTime * pitchCurve.Evaluate(speed/maxSpeed) * pitchRate);
         }
-        if (Input.GetKey(KeyCode.LeftArrow))
-        {
-            transform.RotateAround(transform.position, transform.forward, Time.deltaTime * 150f);
-        }
-        if (Input.GetKey(KeyCode.RightArrow))
-        {
-            transform.RotateAround(transform.position, -transform.forward, Time.deltaTime * 150f);
-        }
 
         // ROLL
+        bool rolled = false;
+        if (Input.GetKey(KeyCode.LeftArrow))
+        {
+            if (roll >= 0)
+            {
+                roll += 0.05f;
+            } else
+            {
+                roll += 10f;
+            }
+            
+            if (roll > 1) roll = 1;
+            rolled = true;
+            //transform.RotateAround(transform.position, transform.forward, Time.deltaTime * 150f);
+        }
+
+        if (Input.GetKey(KeyCode.RightArrow))
+        {
+            if (roll <= 0)
+            {
+                roll -= 0.05f;
+            } else
+            {
+                roll -= 0.1f;
+            }
+            if (roll < -1) roll = -1;
+            rolled = true;
+            //transform.RotateAround(transform.position, -transform.forward, Time.deltaTime * 150f);
+        }
+        Debug.Log(roll);
+        if (roll > 0)
+        {
+            transform.RotateAround(transform.position, transform.forward, Time.deltaTime * turnCurve.Evaluate(Mathf.Abs(roll)) * 180f);
+        } else if (roll < 0)
+        {
+            transform.RotateAround(transform.position, -transform.forward, Time.deltaTime * turnCurve.Evaluate(Mathf.Abs(roll)) * 180f);
+        }
+
+        if (!rolled) roll *= 0.7f;
+
+        // YAW
         if (Input.GetKey(KeyCode.A))
         {
             transform.RotateAround(transform.position, -transform.up, Time.deltaTime * 12f);
@@ -81,7 +112,6 @@ public class AirplaneController : MonoBehaviour
         {
             transform.RotateAround(transform.position, transform.up, Time.deltaTime * 12f);
         }
-        //transform.RotateAround(transform.position, -transform.forward, Time.deltaTime * turnCurve.Evaluate(rPitch) * 180f);
 
         // ACCELERATION AND SPEED
         if (Input.GetKey(KeyCode.W))
