@@ -5,12 +5,24 @@ using UnityEngine;
 public class CameraController : MonoBehaviour
 {
     public Transform target;
-    float distance = 15f;
-    float height = 2f;
+    //float distance = 15f;
+    //float height = 2f;
 
-    float rotationDamping = 3.0f;
+    //float rotationDamping = 3.0f;
+    private Vector3 targetOffset = new Vector3(0, 0.5f, -3);
+    private float lerpFactor = 7f;
 
+    void FixedUpdate()
+    {
+        Vector3 localOffset = target.right * targetOffset.x + target.up * targetOffset.y + target.forward * targetOffset.z;
 
+        Vector3 desiredPosition = target.position + localOffset;
+        transform.position = Vector3.Lerp(transform.position, desiredPosition, Time.fixedDeltaTime * lerpFactor);
+
+        transform.rotation = Quaternion.Lerp(transform.rotation, target.rotation, Time.fixedDeltaTime * lerpFactor);
+    }
+
+    /*
     void LateUpdate()
     {
         float wantedRotationAngleSide = target.eulerAngles.y;
@@ -32,4 +44,5 @@ public class CameraController : MonoBehaviour
 
         transform.position += transform.up * height;
     }
+    */
 }

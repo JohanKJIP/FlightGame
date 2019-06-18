@@ -11,7 +11,6 @@ public class AirplaneController : MonoBehaviour
     public float stockDeacceleration = -2.5f;
     public float pitchRate;
     public float stallSpeed;
-    public float maxTurnSpeed;
     public float turnSpeed;
     public AnimationCurve turnCurve;
     public AnimationCurve pitchCurve;
@@ -41,13 +40,7 @@ public class AirplaneController : MonoBehaviour
             Application.Quit();
         }
 
-        // UPDATE POSITION
         speed += acceleration * Time.deltaTime;
-        if (speed >= 0)
-        {
-            Vector3 targetPos = transform.position + transform.forward * Time.deltaTime * speed;
-            transform.position = targetPos;
-        }
 
         // Increaseing altitude decreases speed, SHOULD BE DELTA?
         speed -= transform.forward.y * Time.deltaTime * 15f;
@@ -71,7 +64,7 @@ public class AirplaneController : MonoBehaviour
                 roll += 0.05f;
             } else
             {
-                roll += 10f;
+                roll += 0.1f;
             }
             
             if (roll > 1) roll = 1;
@@ -92,13 +85,15 @@ public class AirplaneController : MonoBehaviour
             rolled = true;
             //transform.RotateAround(transform.position, -transform.forward, Time.deltaTime * 150f);
         }
-        Debug.Log(roll);
+        //Debug.Log(roll);
+        if (Mathf.Abs(roll) < 0.0001f) roll = 0;
+        //float angle = Mathf.LerpAngle(minAngle, maxAngle, Time.deltaTime);
         if (roll > 0)
         {
-            transform.RotateAround(transform.position, transform.forward, Time.deltaTime * turnCurve.Evaluate(Mathf.Abs(roll)) * 180f);
+            transform.RotateAround(transform.position, transform.forward, Time.deltaTime * turnCurve.Evaluate(Mathf.Abs(roll)) * turnSpeed);
         } else if (roll < 0)
         {
-            transform.RotateAround(transform.position, -transform.forward, Time.deltaTime * turnCurve.Evaluate(Mathf.Abs(roll)) * 180f);
+            transform.RotateAround(transform.position, -transform.forward, Time.deltaTime * turnCurve.Evaluate(Mathf.Abs(roll)) * turnSpeed);
         }
 
         if (!rolled) roll *= 0.7f;
@@ -132,6 +127,13 @@ public class AirplaneController : MonoBehaviour
     {
         Physics.gravity = new Vector3(0f, gravityCurve.Evaluate(speed/maxSpeed) * -9.82f, 0f);
         if (speed > stallSpeed) rb.velocity = rb.velocity * 0.99f;
+
+        // UPDATE POSITION
+        if (speed >= 0)
+        {
+            Vector3 targetPos = transform.position + transform.forward * Time.deltaTime * speed * 8f;
+            transform.position = Vector3.Lerp(transform.position, targetPos, Time.fixedDeltaTime * 6f);
+        }
     }
 
 }
