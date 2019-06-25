@@ -15,6 +15,7 @@ public class AirplaneController : MonoBehaviour
     public AnimationCurve turnCurve;
     public AnimationCurve pitchCurve;
     public AnimationCurve gravityCurve;
+    public Transform startingPoint;
     Rigidbody rb;
 
     private float acceleration;
@@ -121,6 +122,21 @@ public class AirplaneController : MonoBehaviour
         }
 
         if (speed > maxSpeed) speed = maxSpeed;
+
+        // RESET
+        if (Input.GetKey(KeyCode.R))
+        {
+            resetAirplane();
+        }
+    }
+
+    private void resetAirplane()
+    {
+        transform.position = startingPoint.position;
+        rb.velocity = new Vector3(0f, 0f, 0f);
+        rb.rotation = Quaternion.identity;
+        transform.rotation = Quaternion.identity;
+        speed = 20f;
     }
 
     private void FixedUpdate()
