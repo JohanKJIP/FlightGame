@@ -194,7 +194,7 @@ GameObject:
   - component: {fileID: 3185127365567013699}
   - component: {fileID: 3270839863136281863}
   m_Layer: 0
-  m_Name: Airplane 1
+  m_Name: Airplane
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -247,13 +247,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 32c2871442e094a18a52121af8165873, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 20
+  speed: 30
   maxSpeed: 50
-  minSpeed: 20
+  minSpeed: 30
   stockAcceleration: 15
   stockDeacceleration: -15
   pitchRate: 55
-  stallSpeed: 10
+  stallSpeed: 0
   turnSpeed: 180
   turnCurve:
     serializedVersion: 2
