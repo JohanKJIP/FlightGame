@@ -69,7 +69,7 @@ public class AirplaneController : MonoBehaviour
         CalculateRollAndPitchAngles();
         CaluclateAerodynamicEffect();
         CalculateDrag();
-        CalculateLift();
+        //CalculateLift();
         CalculateTorque();
 
         // ACCELERATION AND SPEED
@@ -119,7 +119,7 @@ public class AirplaneController : MonoBehaviour
         float extraDrag = rb.velocity.magnitude * dragFactor;
         rb.drag = originalDrag + extraDrag;
         // Reduce torque, harder to turn at higher speeds.
-        rb.angularDrag = originalAngularDrag * speed;
+        rb.angularDrag = originalAngularDrag * Mathf.Abs(speed)/40;
     }
 
     private void CaluclateAerodynamicEffect()
@@ -137,7 +137,7 @@ public class AirplaneController : MonoBehaviour
             // the the direction the plane is facing, by an amount based on this aeroFactor
             var newVelocity = Vector3.Lerp(rb.velocity, transform.forward * speed,
                                            m_AeroFactor * speed * 0.02f * Time.deltaTime);
-            rb.velocity = newVelocity;
+            //rb.velocity = newVelocity;
 
             // also rotate the plane towards the direction of movement - this should be a very small effect, but means the plane ends up
             // pointing downwards in a stall
@@ -160,7 +160,7 @@ public class AirplaneController : MonoBehaviour
         Vector3 torque = Vector3.zero;
         torque += pitchInput * pitchRate * transform.right;
         // Add torque for the yaw based on the yaw input.
-        //torque += Input.GetAxis("Horizontal2") * yawRate * transform.up;
+        torque += yawInput * yawRate * transform.up;
         // Add torque for the roll based on the roll input.
         torque += -rollInput * rollRate * transform.forward;
         // Add torque for banked turning.
