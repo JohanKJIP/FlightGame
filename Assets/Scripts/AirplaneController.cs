@@ -66,12 +66,6 @@ public class AirplaneController : MonoBehaviour
         throttleInput = Mathf.Clamp(Input.GetAxis("Vertical2"), -1, 1);
         yawInput = Mathf.Clamp(Input.GetAxis("Horizontal2"), -1, 1);
 
-        CalculateRollAndPitchAngles();
-        CaluclateAerodynamicEffect();
-        CalculateDrag();
-        //CalculateLift();
-        CalculateTorque();
-
         // ACCELERATION AND SPEED
 
         if (Input.GetKey(KeyCode.W))
@@ -119,7 +113,7 @@ public class AirplaneController : MonoBehaviour
         float extraDrag = rb.velocity.magnitude * dragFactor;
         rb.drag = originalDrag + extraDrag;
         // Reduce torque, harder to turn at higher speeds.
-        rb.angularDrag = originalAngularDrag * Mathf.Abs(speed)/40;
+        rb.angularDrag = originalAngularDrag + (Mathf.Abs(speed)/40);
     }
 
     private void CaluclateAerodynamicEffect()
@@ -182,6 +176,12 @@ public class AirplaneController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        CalculateRollAndPitchAngles();
+        CaluclateAerodynamicEffect();
+        CalculateDrag();
+        //CalculateLift();
+        CalculateTorque();
+
         // UPDATE POSITION
         if (speed >= 0)
         {

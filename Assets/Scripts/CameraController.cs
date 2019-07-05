@@ -9,7 +9,7 @@ public class CameraController : MonoBehaviour
     //float height = 2f;
 
     //float rotationDamping = 3.0f;
-    private Vector3 targetOffset = new Vector3(0, 0.5f, -3);
+    private Vector3 targetOffset = new Vector3(0, 0.5f, -4);
     private float lerpFactor = 14f;
 
     void FixedUpdate()
