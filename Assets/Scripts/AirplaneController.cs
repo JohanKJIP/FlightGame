@@ -6,13 +6,14 @@ public class AirplaneController : MonoBehaviour
 {
     public float speed = 45f;
     public float maxSpeed = 60f;
+    public float cruiseSpeed = 45f;
     public float minSpeed;
-    public float stockAcceleration = 5f;
-    public float stockDeacceleration = -2.5f;
+    public float accelerationRate;
     public float pitchRate;
     public float yawRate;
     public float rollRate;
     public float turnSpeed;
+    public float stallSpeed;
     public AnimationCurve turnCurve;
     public AnimationCurve pitchCurve;
     public AnimationCurve gravityCurve;
@@ -38,7 +39,6 @@ public class AirplaneController : MonoBehaviour
     void Start()
     {
         rb = gameObject.GetComponent<Rigidbody>();
-        acceleration = 0;
     }
 
     private void Awake()
@@ -56,36 +56,32 @@ public class AirplaneController : MonoBehaviour
             Application.Quit();
         }
 
-        speed += acceleration * Time.deltaTime;
-
-        // Increaseing altitude decreases speed, SHOULD BE DELTA?
-        speed -= transform.forward.y * Time.deltaTime * 15f;
-
         rollInput = Mathf.Clamp(Input.GetAxis("Horizontal"), -1, 1);
         pitchInput = Mathf.Clamp(Input.GetAxis("Vertical"), -1, 1);
         throttleInput = Mathf.Clamp(Input.GetAxis("Vertical2"), -1, 1);
         yawInput = Mathf.Clamp(Input.GetAxis("Horizontal2"), -1, 1);
-
-        // ACCELERATION AND SPEED
-
-        if (Input.GetKey(KeyCode.W))
-        {
-            acceleration = stockAcceleration;
-        } else if (Input.GetKey(KeyCode.S) && speed > 0 && (speed > minSpeed))
-        {
-            acceleration = stockDeacceleration;
-        } else
-        {
-            acceleration = 0;
-        }
-
-        if (speed > maxSpeed) speed = maxSpeed;
 
         // RESET
         if (Input.GetKey(KeyCode.R))
         {
             ResetAirplane();
         }
+    }
+
+    private void FixedUpdate()
+    {
+        CalculateRollAndPitchAngles();
+        CaluclateAerodynamicEffect();
+        CalculateSpeed();
+        CalculateDrag();
+        //CalculateLift();
+        CalculateTorque();
+
+        // UPDATE POSITION
+        Vector3 targetPos = transform.position + transform.forward * Time.fixedDeltaTime * speed * 8f;
+        transform.position = Vector3.Lerp(transform.position, targetPos, Time.fixedDeltaTime * 6f);
+
+        // Increaseing altitude decreases speed, SHOULD BE DELTA?
     }
 
     private void CalculateRollAndPitchAngles()
@@ -105,6 +101,35 @@ public class AirplaneController : MonoBehaviour
             var localFlatRight = transform.InverseTransformDirection(flatRight);
             rollAngle = Mathf.Atan2(localFlatRight.y, localFlatRight.x);
         }
+    }
+
+    private void CalculateSpeed()
+    {
+        acceleration = throttleInput * accelerationRate;
+        if (throttleInput > 0)
+        {
+            if (speed <= maxSpeed)
+            {
+                speed += acceleration * Time.fixedDeltaTime;
+            }
+        }
+        else if (throttleInput < 0)
+        {
+            if (speed >= minSpeed)
+            {
+                speed += acceleration * Time.fixedDeltaTime;
+            }
+        }
+        else
+        {
+            if (speed > cruiseSpeed)
+            {
+                speed -= 0.25f;
+            }
+        }
+        //if (transform.forward )
+        speed -= transform.forward.y * Time.fixedDeltaTime * 15f;
+        Physics.gravity = new Vector3(0f, gravityCurve.Evaluate(speed/maxSpeed) * -9.82f, 0f);
     }
 
     private void CalculateDrag()
@@ -130,14 +155,14 @@ public class AirplaneController : MonoBehaviour
             // Finally we calculate a new velocity by bending the current velocity direction towards
             // the the direction the plane is facing, by an amount based on this aeroFactor
             var newVelocity = Vector3.Lerp(rb.velocity, transform.forward * speed,
-                                           m_AeroFactor * speed * 0.02f * Time.deltaTime);
-            //rb.velocity = newVelocity;
+                                           m_AeroFactor * speed * 0.25f * Time.deltaTime);
+            rb.velocity = newVelocity;
 
             // also rotate the plane towards the direction of movement - this should be a very small effect, but means the plane ends up
             // pointing downwards in a stall
             rb.rotation = Quaternion.Slerp(rb.rotation,
                                                   Quaternion.LookRotation(rb.velocity, transform.up),
-                                                  0.02f * Time.deltaTime);
+                                                  0.25f * Time.deltaTime);
         }
     }
 
@@ -172,22 +197,6 @@ public class AirplaneController : MonoBehaviour
         rb.rotation = Quaternion.identity;
         transform.rotation = Quaternion.identity;
         speed = 20f;
-    }
-
-    private void FixedUpdate()
-    {
-        CalculateRollAndPitchAngles();
-        CaluclateAerodynamicEffect();
-        CalculateDrag();
-        //CalculateLift();
-        CalculateTorque();
-
-        // UPDATE POSITION
-        if (speed >= 0)
-        {
-            Vector3 targetPos = transform.position + transform.forward * Time.deltaTime * speed * 8f;
-            transform.position = Vector3.Lerp(transform.position, targetPos, Time.fixedDeltaTime * 6f);
-        }
     }
 
 }
